@@ -17,6 +17,7 @@
         {% if current_user.is_authenticated %}
             <a href="{{ url_for('account') }}">Account</a>
             <a href="{{ url_for('logout') }}">Logout</a>
+            <a href="{{ url_for('logout') }}">edit_profile</a>
         {% else %}
 <!--        Если не в аккаунте, то залогиниться и зарегистрироваться-->
             <a href="{{ url_for('login') }}">Login</a>

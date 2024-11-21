@@ -5,6 +5,7 @@ from app import app, db, bcrypt
 from app.forms import RegistrationForm, LoginForm
 from app.models import User
 
+from .forms import EditProfileForm
 
 # Создаём маршрут для главной страницы.
 @app.route('/')
@@ -76,3 +77,14 @@ def logout():
 @login_required
 def account():
     return render_template('account.html')
+
+@app.route('/edit_profile', methods=['GET', 'POST'])
+@login_required
+def edit_profile():
+    form = EditProfileForm()
+    if form.validate_on_submit():
+        # Здесь вы можете обработать данные формы, например, сохранить изменения в базе данных
+        flash('Ваш профиль был обновлен!', 'success')
+        return redirect(url_for('edit_profile'))
+    return render_template('edit_profile.html', form=form, title='edit_profile')
+
