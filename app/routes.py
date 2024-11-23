@@ -1,11 +1,11 @@
-from flask import render_template, redirect, url_for, flash
+from flask import render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, current_user, login_required
 
 from app import app, db, bcrypt
 from app.forms import RegistrationForm, LoginForm
 from app.models import User
 
-from .forms import EditProfileForm
+from app.forms import EditProfileForm
 
 # Создаём маршрут для главной страницы.
 @app.route('/')
@@ -73,18 +73,27 @@ def logout():
 
 # Создаём маршрут для отображения страницы аккаунта.
 # Декоратор login_required требует, чтобы пользователь был авторизирован.
-@app.route('/account')
+
+@app.route('/account', methods=['GET', 'POST'])
 @login_required
 def account():
-    return render_template('account.html')
-
-@app.route('/edit_profile', methods=['GET', 'POST'])
-@login_required
-def edit_profile():
     form = EditProfileForm()
     if form.validate_on_submit():
-        # Здесь вы можете обработать данные формы, например, сохранить изменения в базе данных
+        # Изменяем имя пользователя,email, пароль
+        current_user.username = form.username.data
+        current_user.email = form.email.data
+        if form.password.data:
+            hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+            current_user.password = hashed_password
+        # сохранить изменения в базе данных
+        db.session.commit()
         flash('Ваш профиль был обновлен!', 'success')
-        return redirect(url_for('edit_profile'))
-    return render_template('edit_profile.html', form=form, title='edit_profile')
+        return redirect(url_for('account'))
+
+    # Заполняем форму текущими данными пользователя
+    elif request.method == 'GET':
+        form.username.data = current_user.username
+        form.email.data = current_user.email
+
+    return render_template('account.html', form=form)
 
